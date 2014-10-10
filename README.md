@@ -1,7 +1,9 @@
-# Decrypting Android Snapchat images 
+# Decrypting Android Snapchat images
 
 Python script for decrypting stored images from Snapchat version 5.0.34.nn
  **The script needs a rooted device and USB debugging turned on**.
+
+**Remember to close the application before running the script**.
 
 ##How Snapchat decrypted images in previous versions
 
@@ -17,7 +19,7 @@ The content of the decrypted file is a JSON structure. Under the _snapKeysAndIvs
 
 The python script first  stops the Snapchat application to force the storage of decryption keys in the _bananas_ file, it then pulls the images from Snapchat internal storage along with the _bananas_ cache file.  Next  it decrypts the last file with the predictable key to obtain the keys and IVs to decrypt the images. After that, it tries to decrypt each image with all possible pairs of key and IVs to find a successful decryption (this could be also done by pulling the database file and reading the _snapID_ associations table mentioned earlier).
 
-If the script fails, try opening Snapchat again to make sure the snaps where downloaded and run the script again. 
+If the script fails, try opening Snapchat again to make sure the snaps where downloaded and run the script again.
 
 ##References
 
