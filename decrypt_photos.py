@@ -58,8 +58,17 @@ def get_android_id():
 	print p.findall(android_id)[0].strip()
 	return p.findall(android_id)[0].strip()
 
+def get_version():
+	version = run_get_output(''' adb shell dumpsys package com.snapchat.android ''') 
+	p = re.compile('versionName=(.*)')
+	print p.findall(version)[0].strip()
+	return p.findall(version)[0].strip()
+
 def pull_bananas_cache_file():
-	run_blocking_cmd(''' adb pull /data/data/com.snapchat.android/cache/bananas encrypted_bananas_file ''')
+	version38 = ''
+	if VERSION >= '5.0.38.1':
+		version38 = '1'
+	run_blocking_cmd(''' adb pull /data/data/com.snapchat.android/cache/bananas%s encrypted_bananas_file ''' %version38)
 
 def snapchat_bananas_password():
 	m = md5()
@@ -71,10 +80,19 @@ def decrypt_bananas_file():
 	with open("encrypted_bananas_file") as encrypted_bananas:
 		with open("decrypted_bananas_file",'w') as decrypted_bananas:
 			cipher = AES.new(snapchat_bananas_password(), AES.MODE_ECB)
-			decrypt_file(encrypted_bananas,decrypted_bananas,cipher )
+			decrypt_file(encrypted_bananas,decrypted_bananas,cipher )	
 
 def pull_images():
 	run_blocking_cmd(''' adb pull /data/data/com.snapchat.android/cache/received_image_snaps/ encrypted_received_image_snaps/ ''')
+
+def extract_key_and_iv(json_bananas):
+	if VERSION < '5.0.38.1':
+		key= json_bananas['a']		
+		iv= json_bananas['b']
+	else: 
+		key= json_bananas[0]
+		iv= json_bananas[1]
+	return (base64.b64decode(key).encode('hex'),base64.b64decode(iv).encode('hex'))
 
 def decrypt_images():
 	if not os.path.exists('decrypted_received_image_snaps'): os.makedirs('decrypted_received_image_snaps')
@@ -89,8 +107,8 @@ def decrypt_images():
 		for file_name in os.listdir("encrypted_received_image_snaps"):	
 			could_decrypt = False
 			for snap_pair in json_bananas:
-				key= base64.b64decode(json_bananas[snap_pair]['a']).encode('hex') 
-				iv= base64.b64decode( json_bananas[snap_pair]['b']).encode('hex') 
+				(key,iv) = extract_key_and_iv( json_bananas[snap_pair] )
+
 				s = run_get_output('openssl aes-128-cbc -K %s -iv %s -d -in encrypted_received_image_snaps/%s -out decrypted_received_image_snaps/%s' %(key,iv,file_name,file_name))
 				if s == '':
 					could_decrypt = True
@@ -113,6 +131,8 @@ def decrypt_file(in_file, out_file, cipher):
         out_file.write(chunk)
 
 if __name__ == '__main__':
+	global VERSION 
+	VERSION = get_version()
 	#stop the application to save the 'bananas file'
 	run_blocking_cmd('adb shell am force-stop com.snapchat.android')
 	pull_images()
