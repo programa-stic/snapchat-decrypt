@@ -53,10 +53,14 @@ def run_blocking_cmd(command):
 	return subprocess.call(shlex.split(command),stdout=subprocess.PIPE,stderr=subprocess.PIPE)
 
 def get_android_id():
-	android_id = run_get_output(''' adb shell content query --uri content://settings/secure --projection name:value --where "name=\\'android_id\\'" ''')
-	p = re.compile('Row: 0 name=android_id, value=(.*)')
-	print p.findall(android_id)[0].strip()
-	return p.findall(android_id)[0].strip()
+	try:
+		android_id = run_get_output(''' adb shell content query --uri content://settings/secure --projection name:value --where "name=\\'android_id\\'" ''')
+		p = re.compile('Row: 0 name=android_id, value=(.*)')
+		android_id = p.findall(android_id)[0].strip()
+	except:
+		android_id = run_get_output(''' adb shell settings get secure android_id ''').strip()
+	print android_id
+	return android_id
 
 def get_version():
 	version = run_get_output(''' adb shell dumpsys package com.snapchat.android ''') 
