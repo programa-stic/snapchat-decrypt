@@ -6,7 +6,7 @@ Python script for decrypting stored images from Snapchat version 5.0.34.nn
 **Remember to close the application before running the script**.
 
 ##News:
-Support for Snapchat last version 5.0.38.1. Now checks wich version it's installed to obtain the images.
+Support for Snapchat last version 5.0.38.1. Now checks which version it's installed to obtain the images.
 
 ##How Snapchat decrypted images in previous versions
 
